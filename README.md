@@ -5,7 +5,7 @@ A CLI tool to set the version of leaf packages in a monorepo.
 ## Install
 
 ```
-yarn add set-version
+yarn add set-versions
 ```
 
 ## Usage
