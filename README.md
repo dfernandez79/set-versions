@@ -1,4 +1,4 @@
-# set-version
+# set-versions
 
 A CLI tool to set the version of leaf packages in a monorepo.
 
