@@ -1,6 +1,6 @@
 {
   "name": "set-versions",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "A CLI tool to set the version of leaf packages in a monorepo",
   "main": "index.js",
   "author": "Diego Fernandez <diegof79@gmail.com>",
