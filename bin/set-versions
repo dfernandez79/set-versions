@@ -1,0 +1,58 @@
+#!/usr/bin/env node
+const meow = require('meow');
+const setVersions = require('..');
+const resolveWorkspaces = require('../resolve-workspaces');
+
+const cli = meow(
+  `
+    Usage
+
+        $ set-versions <version> <packages>
+
+    Options
+
+        --workspaces, -w Use workspaces from package.json.
+                         If no version is specified, it uses the version
+                         from package.json.
+    
+    Examples
+
+      $ set-versions 2.0.0 packages/*/package.json
+      # Set the version of packages/*/package.json to 2.0.0 and also
+      # updates any dependencies between packages
+    
+      $ set-versions --workspaces
+      # Takes the version from root package.json and then updates all the
+      # leaf packages
+    
+      $ set-versions 1.5.0 --workspaces
+      # Set version of the root package.json and leaf packages to 1.5.0
+`,
+  {
+    flags: {
+      workspaces: {
+        type: 'boolean',
+        alias: 'w',
+      },
+    },
+  }
+);
+
+if (cli.flags.workspaces) {
+  if (cli.input.length > 1) {
+    console.warn(
+      'When using --workspaces the tool will ignore package file arguments'
+    );
+  }
+
+  resolveWorkspaces().then(({ root, packages }) => {
+    const currentRootVersion = root.package.version;
+    const finalVersion = cli.input[0] || currentRootVersion;
+    setVersions(finalVersion, [
+      ...(finalVersion !== currentRootVersion ? [root.packagePath] : []),
+      ...packages,
+    ]);
+  });
+} else {
+  setVersions(cli.input[0], cli.input.slice(1));
+}
