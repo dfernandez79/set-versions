@@ -20,14 +20,14 @@
     "release": "np"
   },
   "devDependencies": {
-    "eslint": "^6.0.1",
-    "eslint-plugin-import": "^2.18.0",
-    "eslint-plugin-jest": "^22.7.1",
-    "execa": "^2.0.1",
-    "jest": "^24.8.0",
+    "eslint": "^6.3.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^22.17.0",
+    "execa": "^2.0.4",
+    "jest": "^24.9.0",
     "mkdirp": "^0.5.1",
     "np": "^5.0.3",
-    "rimraf": "^2.6.3"
+    "rimraf": "^3.0.0"
   },
   "dependencies": {
     "glob": "^7.1.4",
