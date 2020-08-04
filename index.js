@@ -19,7 +19,7 @@ const updateDependencies = (dependencies, version, names) =>
     {}
   );
 
-function updateVersions(version, filesAndPackages) {
+function updateVersions(version, filesAndPackages, options) {
   const names = filesAndPackages
     .map(({ contents: { name } }) => name)
     .filter(name => name !== undefined);
@@ -27,11 +27,18 @@ function updateVersions(version, filesAndPackages) {
   return filesAndPackages.map(({ file, contents }) => {
     const newContents = JSON.parse(JSON.stringify(contents));
     newContents.version = version;
-    dependencyTypes.forEach(dep => {
-      if (dep in newContents) {
-        newContents[dep] = updateDependencies(newContents[dep], version, names);
-      }
-    });
+
+    if (options.bumpDependencies) {
+      dependencyTypes.forEach(dep => {
+        if (dep in newContents) {
+          newContents[dep] = updateDependencies(
+            newContents[dep],
+            version,
+            names
+          );
+        }
+      });
+    }
 
     return {
       file,
@@ -40,7 +47,7 @@ function updateVersions(version, filesAndPackages) {
   });
 }
 
-async function setVersions(version, packages) {
+async function setVersions(version, packages, options) {
   const filesAndPackages = await Promise.all(
     packages.map(file =>
       readFile(file).then(contents => ({
@@ -50,7 +57,7 @@ async function setVersions(version, packages) {
     )
   );
 
-  const newPackages = updateVersions(version, filesAndPackages);
+  const newPackages = updateVersions(version, filesAndPackages, options);
 
   return Promise.all(
     newPackages.map(({ file, contents }) =>

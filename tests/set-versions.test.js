@@ -85,9 +85,9 @@ test('Set version with version and files args', async () => {
   ];
   await execa(setVersions, ['5.0.0', ...packages], { cwd: testFixturePath2 });
 
-  const [aPkg, bPkg] = (await Promise.all(
-    packages.map(pkgPath => readFile(pkgPath))
-  )).map(json => JSON.parse(json));
+  const [aPkg, bPkg] = (
+    await Promise.all(packages.map(pkgPath => readFile(pkgPath)))
+  ).map(json => JSON.parse(json));
 
   expect(aPkg.version).toBe('5.0.0');
   expect(bPkg.version).toBe('5.0.0');
@@ -97,11 +97,13 @@ test('Set version with version and files args', async () => {
 test('Set versions with --workspaces', async () => {
   await execa(setVersions, ['--workspaces'], { cwd: testFixturePath });
 
-  const [aPkg, bPkg, cPkg] = (await Promise.all([
-    readFile(path.join(testFixturePath, 'packages', 'a', 'package.json')),
-    readFile(path.join(testFixturePath, 'packages', 'b', 'package.json')),
-    readFile(path.join(testFixturePath, 'packages', 'c', 'package.json')),
-  ])).map(json => JSON.parse(json));
+  const [aPkg, bPkg, cPkg] = (
+    await Promise.all([
+      readFile(path.join(testFixturePath, 'packages', 'a', 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'b', 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'c', 'package.json')),
+    ])
+  ).map(json => JSON.parse(json));
 
   expect(aPkg.version).toBe('2.0.0');
   expect(bPkg.version).toBe('2.0.0');
@@ -116,10 +118,12 @@ test('Set versions reading workspace.packages', async () => {
     cwd: testFixturePath2,
   });
 
-  const [aPkg, bPkg] = (await Promise.all([
-    readFile(path.join(testFixturePath2, 'packages', 'a', 'package.json')),
-    readFile(path.join(testFixturePath2, 'packages', 'b', 'package.json')),
-  ])).map(json => JSON.parse(json));
+  const [aPkg, bPkg] = (
+    await Promise.all([
+      readFile(path.join(testFixturePath2, 'packages', 'a', 'package.json')),
+      readFile(path.join(testFixturePath2, 'packages', 'b', 'package.json')),
+    ])
+  ).map(json => JSON.parse(json));
 
   expect(aPkg.version).toBe('5.0.0');
   expect(bPkg.version).toBe('5.0.0');
@@ -129,12 +133,14 @@ test('Set versions reading workspace.packages', async () => {
 test('Set versions with --workspaces and version', async () => {
   await execa(setVersions, ['6.0.0', '--workspaces'], { cwd: testFixturePath });
 
-  const [rootPkg, aPkg, bPkg, cPkg] = (await Promise.all([
-    readFile(path.join(testFixturePath, 'package.json')),
-    readFile(path.join(testFixturePath, 'packages', 'a', 'package.json')),
-    readFile(path.join(testFixturePath, 'packages', 'b', 'package.json')),
-    readFile(path.join(testFixturePath, 'packages', 'c', 'package.json')),
-  ])).map(json => JSON.parse(json));
+  const [rootPkg, aPkg, bPkg, cPkg] = (
+    await Promise.all([
+      readFile(path.join(testFixturePath, 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'a', 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'b', 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'c', 'package.json')),
+    ])
+  ).map(json => JSON.parse(json));
 
   expect(rootPkg.version).toBe('6.0.0');
   expect(aPkg.version).toBe('6.0.0');
@@ -142,5 +148,30 @@ test('Set versions with --workspaces and version', async () => {
   expect(cPkg.version).toBe('6.0.0');
   expect(bPkg.dependencies['pre-a']).toBe('6.0.0');
   expect(bPkg.dependencies['other-c']).toBe('6.0.0');
+  expect(bPkg.dependencies['other-d']).toBe('4.1.3');
+});
+
+test('Allows to skip update of dependencies between the packages', async () => {
+  await execa(
+    setVersions,
+    ['6.0.0', '--workspaces', '--skip-bump-dependencies'],
+    { cwd: testFixturePath }
+  );
+
+  const [rootPkg, aPkg, bPkg, cPkg] = (
+    await Promise.all([
+      readFile(path.join(testFixturePath, 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'a', 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'b', 'package.json')),
+      readFile(path.join(testFixturePath, 'packages', 'c', 'package.json')),
+    ])
+  ).map(json => JSON.parse(json));
+
+  expect(rootPkg.version).toBe('6.0.0');
+  expect(aPkg.version).toBe('6.0.0');
+  expect(bPkg.version).toBe('6.0.0');
+  expect(cPkg.version).toBe('6.0.0');
+  expect(bPkg.dependencies['pre-a']).toBe('1.0.0');
+  expect(bPkg.dependencies['other-c']).toBe('1.0.0');
   expect(bPkg.dependencies['other-d']).toBe('4.1.3');
 });

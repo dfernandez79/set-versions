@@ -11,10 +11,13 @@ const cli = meow(
 
     Options
 
-        --workspaces, -w Use workspaces from package.json.
-                         If no version is specified, it uses the version
-                         from package.json.
+        --workspaces, -w            Use workspaces from package.json.
+                                    If no version is specified, it uses the version
+                                    from package.json.
     
+        --skip-bump-dependencies    Only update packages versions but do not update
+                                    dependencies between the packages of workspace.
+
     Examples
 
       $ set-versions 2.0.0 packages/*/package.json
@@ -34,9 +37,16 @@ const cli = meow(
         type: 'boolean',
         alias: 'w',
       },
+      skipBumpDependencies: {
+        type: 'boolean',
+      },
     },
   }
 );
+
+const options = {
+  bumpDependencies: !cli.flags.skipBumpDependencies,
+};
 
 if (cli.flags.workspaces) {
   if (cli.input.length > 1) {
@@ -48,11 +58,15 @@ if (cli.flags.workspaces) {
   resolveWorkspaces().then(({ root, packages }) => {
     const currentRootVersion = root.package.version;
     const finalVersion = cli.input[0] || currentRootVersion;
-    setVersions(finalVersion, [
-      ...(finalVersion !== currentRootVersion ? [root.packagePath] : []),
-      ...packages,
-    ]);
+    setVersions(
+      finalVersion,
+      [
+        ...(finalVersion !== currentRootVersion ? [root.packagePath] : []),
+        ...packages,
+      ],
+      options
+    );
   });
 } else {
-  setVersions(cli.input[0], cli.input.slice(1));
+  setVersions(cli.input[0], cli.input.slice(1), options);
 }
